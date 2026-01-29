@@ -1,4 +1,5 @@
 import flet as ft
+import flet_charts as fch
 import seaborn as sns
 import sys
 import numpy as np
@@ -9,9 +10,10 @@ def main(page: ft.Page):
 	size=64
 	field=np.random.random(size=(size,size))
 
+	fig, ax =plt.subplots()
+	im=ax.imshow(field,cmap='gray')
 
-	sns.heatmap(field, cmap="gray")
-	smth=plt.show()
-	page.add(ft.Image(src=smth))
+	
+	page.add(fch.MatplotlibChart(figure=fig))
 
 ft.run(main)
