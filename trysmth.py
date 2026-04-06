@@ -2,50 +2,57 @@ import Perlin
 import matplotlib.pyplot as plot
 import numpy as np
 
+
+data_size=4
+lat_size=16
 # генерация равномерно распределенных координат для функции perlin
-lin_array = np.linspace(1, 16, 160, endpoint=False)
+lin_array = np.linspace(0, data_size, data_size*10, endpoint=False)
 x, y = np.meshgrid(lin_array, lin_array)
 
 print(x)
-
-print(x*2)
+print(y[::-1])
+# print(x*2)
 # вывод графика pyplot
 
 # Create a subplot
 # fig1 = plot.figure()
 # ax0, ax1, ax2 = fig1.subplots(1, 3)
+# y=y[::-1]
 seed=int(input("Enter seed:  "))
 
-# ax0.plot(plot.imshow(Perlin.perlin(x, y, seed=seed), origin='upper'))
-# ax0.set_title('normal')
+# np.random.seed(seed)
+# ptable = np.arange(lat_size**2, dtype=int)
+# # print(ptable)
+# np.random.shuffle(ptable)
+# ptable = np.stack([ptable, ptable]).flatten()
+# print(ptable)
 
-# ax0.plot.imshow(Perlin.perlin(x, y, seed=seed), origin='upper')
-# ax0.set_title('double Freq')
+fig, axs = plot.subplots(2, 2, figsize=(10, 4))
 
-# ax0.plot.imshow(Perlin.perlin(x, y, seed=seed), origin='upper')
-# ax0.set_title('quadra Freq')
-
-
-
-fig, axs = plot.subplots(1, 3, figsize=(10, 4))
-
-aa0=np.array(Perlin.perlin(x, y, seed=seed))
+aa0=Perlin.mult_perlin(x,y,seed=876876876,size=lat_size)
 size0=aa0.shape
-axs[0].imshow(aa0, origin="upper")
-axs[0].set_title("Perlin x1")
+axs[0][0].imshow(aa0, origin="lower")
+axs[0][0].set_title("Perlin x1")
 
-aa1=np.array(Perlin.perlin(x * 2, y * 2, seed=seed))
-axs[1].imshow(aa1, origin="upper")
-axs[1].set_title("Perlin x2")
+aa1=Perlin.mult_perlin(x*2,y*2,seed=876876876,size=lat_size)
+axs[0][1].imshow(aa1, origin="lower")
+axs[0][1].set_title("Perlin x2")
 
-aa2=((aa0.flatten()+aa1.flatten())/2).reshape((160,160))
-print(aa2)
-axs[1].imshow(aa2, origin="upper")
-axs[1].set_title("Perlin x3")
+aa1=Perlin.mult_perlin(x*4,y*4,seed=876876876,size=lat_size)
+axs[1][0].imshow(aa1, origin="lower")
+axs[1][0].set_title("Perlin x3")
+
+
+aa2=aa0.flatten()+aa1.flatten()
+aa2=aa2.reshape(data_size*10,data_size*10)
+
+
+axs[1][1].imshow(aa2, origin="lower")
+axs[1][1].set_title("Perlin together")
 
 # plot.tight_layout()
 plot.show()
 
-print(120.13%16)
 
-print(Perlin.perlin(120.13, 27.11, seed=3))
+
+

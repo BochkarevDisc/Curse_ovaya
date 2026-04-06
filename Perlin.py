@@ -2,29 +2,32 @@ import numpy as np
 import matplotlib.pyplot as plot
 import math as m
 
-def perlin(x, y, seed=0): # для одного числа
+def perlin(x, y, seed, size): # для одного числа
    # создание матрицы для шума и генерация случайного значения seed
 
    np.random.seed(seed)
-   ptable = np.arange(256, dtype=int)
-   print(ptable)
+   ptable = np.arange(size**2, dtype=int)
+   # print(ptable)
    np.random.shuffle(ptable)
    ptable = np.stack([ptable, ptable]).flatten()
-   print(ptable)
+   # print(ptable)
 
    # для бесконечной сетки
   
    # целые числа
-   xi, yi = m.floor(x%16), m.floor(y%16)
+   xi, yi = m.floor(x%size), m.floor(y%size)
+   # print(f"xi={xi},  yi={yi}")
 
    # локальные координаты
-   xg, yg = x-m.floor(x), y - m.floor(x)
+   xg, yg = x-m.floor(x), y - m.floor(y)
+   # print(f"xg= {xg}, yg={yg}")
+
 
    # применение функции затухания к координатам расстояний
    xf, yf = fade(xg), fade(yg)
 
     # вычисление градиентов в заданных интервалах
-   print(ptable[ptable[xi] + yi])
+   # print(ptable[ptable[xi] + yi])
    n00 = gradient(ptable[ptable[xi] + yi], xg, yg)
    n01 = gradient(ptable[ptable[xi] + yi + 1], xg, yg - 1)
    n11 = gradient(ptable[ptable[xi + 1] + yi + 1], xg - 1, yg - 1)
@@ -51,6 +54,18 @@ def gradient(c, x, y):
    return  x_coff*x+y_coff*y
 
 
+
+def mult_perlin(x,y,seed=0,size=16):
+   res=np.array([])
+   for xi,yi in zip(x.flatten(), y.flatten()):
+      res=np.append(res,perlin(xi, yi, 2,size ))
+
+   sizeo=res.shape[0]
+   # print(size)
+
+   res=res.reshape(int(m.sqrt(sizeo)),int(m.sqrt(sizeo)))
+   return res
+   # print(res)
 
 
 
