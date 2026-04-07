@@ -12,7 +12,7 @@ perm = p * 2
 print(Simplex.SimplexNoise([4.55,6.07],perm,grad))
 
 lin_array = np.linspace(0, 10, 10*10, endpoint=False)
-x, y = np.meshgrid(lin_array, lin_array)
+x, y,z = np.meshgrid(lin_array, lin_array, np.linspace(0, 10, 10*10, endpoint=False) )
 
 fig, axs = plt.subplots(2, 2, figsize=(10, 4))
 

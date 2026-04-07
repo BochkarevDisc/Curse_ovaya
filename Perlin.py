@@ -56,14 +56,15 @@ def gradient(c, x, y):
 
 
 def mult_perlin(x,y,seed=0,size=16):
-   res=np.array([])
-   for xi,yi in zip(x.flatten(), y.flatten()):
-      res=np.append(res,perlin(xi, yi, 2,size ))
+   res = np.zeros((x.shape[0],y.shape[0]))
+   for i in range(x.shape[0]):
+         for j in range(y.shape[0]):
+            res[i, j] = perlin(x[i, j], y[i, j], seed, size)
 
    sizeo=res.shape[0]
    # print(size)
 
-   res=res.reshape(int(m.sqrt(sizeo)),int(m.sqrt(sizeo)))
+   #res=res.reshape(int(m.sqrt(sizeo)),int(m.sqrt(sizeo)))
    return res
    # print(res)
 
