@@ -6,13 +6,33 @@ import random
 rows=100
 cols=100
 
+rule="B.3.6.7.8/S.3.4.6.7.8"
+b_rule,s_rule=rule.split('/')
+b_rule=b_rule.split('.')[1:]
+s_rule=s_rule.split('.')[1:]
+b_rule=[int(z) for z in b_rule]
+s_rule=[int(z) for z in s_rule]
+print(b_rule)
+print(s_rule)
+
 field=cell.create_start_matrix(rows,cols)
 field_1=cell.generate_neighbours(field)
 field_2=cell.next_generation_lands(field)
 field_3=cell.next_generation_lands(field)
 
-for i in range(400):
+#field_4=cell.generate_neighbours_v2(field,1,1)
+#field_5=field_4-field_1
+#field_6=cell.generate_neighbours_v2(field,2,1)
+#field_7=field_6-field_1
+
+field_8=cell.next_generation_lands_v2(field,2,2,"B.3.6.7.8/S.3.4.6.7.8")
+
+for i in range(100):
     field_3=cell.next_generation_lands(field_3)
+
+for i in range(100):
+    field_8=cell.next_generation_lands_v2(field_8,2,2,"B.3.6.7.8/S.3.4.6.7.8")
+
 
 fig, axs = plt.subplots(2, 2, figsize=(10, 4))
 
@@ -22,7 +42,7 @@ axs[0][0].set_title("state ")
 axs[0][1].imshow(field_1, origin="lower", cmap='gray')
 axs[0][1].set_title("neighbours x1")
 
-axs[1][0].imshow(field_2, origin="lower", cmap='gray')
+axs[1][0].imshow(field_8, origin="lower", cmap='gray')
 axs[1][0].set_title("new state x1")
 
 axs[1][1].imshow(field_3, origin="lower", cmap='gray')
