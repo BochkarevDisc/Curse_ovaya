@@ -2,23 +2,115 @@ import numpy as np
 import matplotlib.pyplot as plt
 import SimplexNoise as Simplex
 import random
+import opensimplex as simple
+import SimplexNoise_open as simp_open
 
-grad=Simplex.gen_gradients(2)
+#grad=Simplex.gen_gradients(2)
+grad = np.array([
+    [1,1], [-1,1], [1,-1], [-1,-1],
+    [1,0], [-1,0], [0,1], [0,-1]
+],dtype=float)
+print(grad)
 
 p = list(range(256))
 random.shuffle(p)
 perm = p * 2
+#print(Simplex.SimplexNoise([4.55,6.07],perm,grad))
 
-print(Simplex.SimplexNoise([4.55,6.07],perm,grad))
+""" lin_array = np.linspace(0, 10, 10*10, endpoint=False)
+x, y= np.meshgrid(lin_array, lin_array)
 
-lin_array = np.linspace(0, 10, 10*10, endpoint=False)
-x, y,z = np.meshgrid(lin_array, lin_array, np.linspace(0, 10, 10*10, endpoint=False) )
+fig, axs = plt.subplots(1, 2, figsize=(6, 6))
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 4))
+aa0=simp_open.generate_open_simplex(100,10,46)
 
-aa0=Simplex.mult_Simplex(x,y,perm,grad)
+field=simple.noise2array( np.linspace(0, 10, 10*10, endpoint=False),np.linspace(0, 10, 10*10, endpoint=False))
 aa1=np.array(aa0)
-axs[0][0].imshow(aa1, origin="lower", cmap='gray')
-axs[0][0].set_title("Simplex x1")
+axs[0].imshow(aa1, origin="lower", cmap='gray')
+axs[0].set_title("Simplex x1")
 
-plt.show()
+axs[1].imshow(field, origin="lower", cmap='gray')
+axs[1].set_title("Simplex x1")
+
+plt.show() """
+
+
+
+
+
+aa0=simp_open.OpenSimplex(46)
+
+p=[172, 247, 12, 36, 5, 52, 17, 19, 151, 48, 191, 163, 26, 170, 9, 171, 198, 71,
+51, 132, 43, 243, 108, 238, 181, 206, 149, 223, 84, 70, 10, 4, 188, 91, 228, 239,
+251, 161, 110, 126, 194, 237, 148, 218, 167, 90, 199, 157, 240, 145, 185, 250, 88, 11,
+178, 175, 104, 224, 119, 162, 45, 8, 103, 81, 141, 85, 169, 152, 86, 106, 25, 62,
+252, 122, 217, 89, 201, 216, 190, 13, 24, 219, 192, 37, 94, 234, 77, 96, 27, 115,
+38, 195, 74, 220, 33, 121, 78, 136, 21, 253, 111, 105, 173, 65, 41, 142, 255, 113,
+232, 226, 97, 44, 75, 83, 112, 42, 230, 207, 184, 139, 205, 246, 73, 138, 143, 221,
+64, 34, 0, 54, 213, 18, 101, 49, 39, 123, 1, 29, 165, 15, 95, 210, 212, 20,
+137, 196, 135, 109, 134, 222, 67, 57, 214, 87, 245, 211, 174, 47, 177, 166, 14, 76,
+68, 241, 131, 28, 82, 248, 254, 100, 231, 180, 153, 66, 35, 6, 179, 99, 182, 159,
+53, 133, 225, 46, 50, 164, 3, 202, 124, 233, 125, 154, 7, 249, 128, 244, 127, 102,
+58, 144, 140, 56, 158, 183, 229, 209, 160, 197, 61, 16, 63, 117, 23, 187, 92, 80,
+193, 156, 129, 204, 227, 168, 107, 2, 176, 118, 120, 200, 215, 150, 114, 242, 236, 30,
+79, 59, 98, 22, 55, 31, 32, 72, 130, 235, 208, 155, 60, 93, 203, 146, 147, 186,
+116, 40, 69, 189, 172, 247, 12, 36, 5, 52, 17, 19, 151, 48, 191, 163, 26, 170,
+9, 171, 198, 71, 51, 132, 43, 243, 108, 238, 181, 206, 149, 223, 84, 70, 10, 4,
+188, 91, 228, 239, 251, 161, 110, 126, 194, 237, 148, 218, 167, 90, 199, 157, 240, 145,
+185, 250, 88, 11, 178, 175, 104, 224, 119, 162, 45, 8, 103, 81, 141, 85, 169, 152,
+86, 106, 25, 62, 252, 122, 217, 89, 201, 216, 190, 13, 24, 219, 192, 37, 94, 234,
+77, 96, 27, 115, 38, 195, 74, 220, 33, 121, 78, 136, 21, 253, 111, 105, 173, 65,
+41, 142, 255, 113, 232, 226, 97, 44, 75, 83, 112, 42, 230, 207, 184, 139, 205, 246,
+73, 138, 143, 221, 64, 34, 0, 54, 213, 18, 101, 49, 39, 123, 1, 29, 165, 15,
+95, 210, 212, 20, 137, 196, 135, 109, 134, 222, 67, 57, 214, 87, 245, 211, 174, 47,
+177, 166, 14, 76, 68, 241, 131, 28, 82, 248, 254, 100, 231, 180, 153, 66, 35, 6,
+179, 99, 182, 159, 53, 133, 225, 46, 50, 164, 3, 202, 124, 233, 125, 154, 7, 249,
+128, 244, 127, 102, 58, 144, 140, 56, 158, 183, 229, 209, 160, 197, 61, 16, 63, 117,
+23, 187, 92, 80, 193, 156, 129, 204, 227, 168, 107, 2, 176, 118, 120, 200, 215, 150,
+114, 242, 236, 30, 79, 59, 98, 22, 55, 31, 32, 72, 130, 235, 208, 155, 60, 93,
+203, 146, 147, 186, 116, 40, 69, 189]
+
+grad/=np.linalg.norm(grad,axis=1,keepdims=True)
+
+print(p)
+print(grad)
+
+res1=Simplex.SimplexNoise([3.77,4.65],p,grad)
+res2=aa0.noise2d(3.77,4.65)
+
+print(res1)
+print(res2)
+
+""" lin = np.linspace(0, 5, 100)
+
+x, y = np.meshgrid(lin, lin)
+z_val = 2.5 
+
+res = np.zeros_like(x) """
+
+""" for i in range(x.shape[0]):
+    for j in range(x.shape[1]):
+        res[i, j] = Simplex.SimplexNoise(
+            [x[i, j], y[i, j], z_val],
+            perm,
+            grad
+        )
+
+plt.imshow(res, cmap="gray")
+plt.title("3D Simplex (slice z=2.5)")
+plt.show()  """
+
+
+""" for z_val in np.linspace(0, 5, 20):
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            res[i, j] = Simplex.SimplexNoise(
+                [x[i, j], y[i, j], z_val],
+                perm,
+                grad
+            )
+
+    plt.imshow(res, cmap="gray")
+    plt.title(f"z={z_val:.2f}")
+    plt.pause(0.1)
+ """

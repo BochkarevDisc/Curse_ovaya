@@ -2,11 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plot
 import math as m
 
+
+
 def get_1_vect(li):
     return [0 if i=="*" else i  and -1 if i=="0" else i   and 1 if i=="1" else i for i in li]
 
 def gen_gradients(n=2):
     bins=[   (bin(i)[2:]).zfill(n-1) for i in range(pow(2,n-1))]
+    print(bins)
     result=[]
     for item in bins:
         smth='*'+item
@@ -27,11 +30,11 @@ def get_distances(point,F,G):
     distances=point-unskewed_point
     return distances,skewed_point   ##x0,y0,i,j
 
-def get_grad(perm,li):
-    if len(li)==1:
-        return perm[li[0]]
-    else:
-        return perm[li[0]+get_grad(perm,li[1:])]
+def get_grad(perm, li):
+    result = 0
+    for val in reversed(li):
+        result = perm[(int(val) + result) & 255]
+    return result
 
 
 def SimplexNoise(coords,permutation,grad):
@@ -49,14 +52,17 @@ def SimplexNoise(coords,permutation,grad):
     
     F=(m.sqrt(n+1)-1)/n
     G=(1-(1/m.sqrt(n+1)))/n
+    print(f"F+g= {F}  , {G}")
+
 
     distances, skewed_point=get_distances(coords,F,G)
 
-    # print(distances)
-
+    print(f"distances={distances}")
+    print(f"skewed={skewed_point}")
+    
     order=np.argsort(distances)[::-1]
     vertices=[] #порядок обхода вершин
-    vertices.append(np.array([0,0]))
+    vertices.append(np.zeros(len(distances)))
 
     starter=np.zeros((1,n),dtype=int)[0]
     for i in order:
@@ -68,6 +74,8 @@ def SimplexNoise(coords,permutation,grad):
     corners=[] # действительно вершины симплекса
     corners.append(distances)
     for i in range(n):
+        #print(distances)
+        #print(vertices)
         smth=distances-vertices[i]+(i+1)*G
         corners.append(smth)
 
@@ -81,15 +89,18 @@ def SimplexNoise(coords,permutation,grad):
     new_vert=vertices+np.array(skewed_point)
 
     gradients=[]
+    #print(new_vert)
     for item in new_vert:
-        gradients.append(grad[get_grad(permutation,item) % (n*pow(2,n-1))])
+        gi = get_grad(permutation, item) % len(grad)
+        gradients.append(grad[gi])
+        #gradients.append(grad[get_grad(permutation,item) % (n*pow(2,n-1))])
 
         
 
    # corners=[i[0] for i in corners]  #ubrat vloghennost
     #print(corners)
     res=[] #n0,n1,n2
-
+    #print(f"gradients={gradients}")
     for i in range(len(corners)):
         temp=0.5-np.sum(corners[i]**2)
         if temp <0:
@@ -112,3 +123,13 @@ def mult_Simplex(x,y,permutation,grad):
    res=res.reshape(int(m.sqrt(sizeo)),int(m.sqrt(sizeo)))
    return res
    # print(res)
+
+def mult_Simplex_fast(x, y, permutation, grad):
+    h, w = x.shape
+    res = np.zeros((h, w))
+
+    for i in range(h):
+        for j in range(w):
+            res[i, j] = SimplexNoise([x[i, j], y[i, j]], permutation, grad)
+
+    return res

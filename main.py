@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 import Perlin
 import SimplexNoise
+import Cellar_automat
+import DiamondSquare
 
 
 def generate_perlin(size, scale=10, seed=0):
@@ -42,6 +44,8 @@ def main(page: ft.Page):
 
         if noise_type == "perlin":
             field = generate_perlin(size)
+            print(field.max())
+            print(field.min())
         elif noise_type == "simplex":
             field = generate_simplex(size)
         else:
@@ -50,6 +54,7 @@ def main(page: ft.Page):
         ax.imshow(field, cmap='gray')
         ax.set_title(noise_type)
         fig.canvas.draw_idle()
+        plt.plot()
         chart.update()
 
     chart = fch.MatplotlibChart(figure=fig)
@@ -66,7 +71,7 @@ def main(page: ft.Page):
 
     page.add(dropdown, chart)
 
-    update_noise("random")
+    update_noise("perlin")
 
 
 ft.run(main)
