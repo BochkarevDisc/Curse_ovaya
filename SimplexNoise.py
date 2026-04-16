@@ -1,7 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plot
 import math as m
+import itertools
 
+
+def generate_gradients(n: int):
+    
+    grads = []
+
+    # выбираем 2 координаты, которые будут ненулевыми
+    for axes in itertools.combinations(range(n), 2):
+        for signs in itertools.product([-1, 1], repeat=2):
+            vec = np.zeros(n)
+
+            vec[axes[0]] = signs[0]
+            vec[axes[1]] = signs[1]
+
+            grads.append(vec)
+
+    grads = np.array(grads, dtype=float)
+
+    # нормализация
+    norms = np.linalg.norm(grads, axis=1, keepdims=True)
+    grads = grads / norms
+
+    return grads
 
 
 def get_1_vect(li):
@@ -52,13 +75,13 @@ def SimplexNoise(coords,permutation,grad):
     
     F=(m.sqrt(n+1)-1)/n
     G=(1-(1/m.sqrt(n+1)))/n
-    print(f"F+g= {F}  , {G}")
+    #print(f"F+g= {F}  , {G}")
 
 
     distances, skewed_point=get_distances(coords,F,G)
 
-    print(f"distances={distances}")
-    print(f"skewed={skewed_point}")
+    #print(f"distances={distances}")
+    #print(f"skewed={skewed_point}")
     
     order=np.argsort(distances)[::-1]
     vertices=[] #порядок обхода вершин
@@ -69,17 +92,17 @@ def SimplexNoise(coords,permutation,grad):
         starter[i]=1
         vertices.append(  starter.copy()  )
 
-    # print(f"vertices= {vertices}")
+    #print(f"vertices= {vertices}")
     
     corners=[] # действительно вершины симплекса
     corners.append(distances)
     for i in range(n):
         #print(distances)
         #print(vertices)
-        smth=distances-vertices[i]+(i+1)*G
+        smth=distances-vertices[i+1]+(i+1)*G
         corners.append(smth)
 
-  #  print(f"corners= {corners}")
+    #print(f"corners_my= {corners}")
     
 
     #print(f'{skewed_point}')

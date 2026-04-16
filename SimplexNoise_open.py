@@ -16,8 +16,8 @@ class OpenSimplex:
 
         # нормализация
         self.gradients /= np.linalg.norm(self.gradients, axis=1, keepdims=True)
-        print(f"perm={self.perm}")
-        print(f"grads={self.gradients}")
+        #print(f"perm={self.perm}")
+        #print(f"grads={self.gradients}")
 
     def dot(self, g, x, y):
         return g[0] * x + g[1] * y
@@ -28,10 +28,10 @@ class OpenSimplex:
         s = (x + y) * F2
         i = math.floor(x + s)
         j = math.floor(y + s)
-        print(f"skewed={i},{j}")
+        #print(f"skewed={i},{j}")
         # Unskew
         G2 = (3.0 - math.sqrt(3.0)) / 6.0
-        print(f"F+g= {F2}  , {G2}")
+        #print(f"F+g= {F2}  , {G2}")
         t = (i + j) * G2
         X0 = i - t
         Y0 = j - t
@@ -49,6 +49,9 @@ class OpenSimplex:
         y1 = y0 - j1 + G2
         x2 = x0 - 1 + 2 * G2
         y2 = y0 - 1 + 2 * G2
+
+        #print([i1,j1])
+        #print(f"corners_open=[[{[x0,y0]}],[{[x1,y1]}],[{[x2,y2]}]]")
 
         ii = i & 255
         jj = j & 255
