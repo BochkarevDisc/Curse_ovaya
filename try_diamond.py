@@ -16,7 +16,7 @@ axs[0][0].set_title("state ")
 #axs[0][1].set_title("neighbours x1")
 
 #axs[1][0].imshow(field_8, origin="lower", cmap='gray')
-#axs[1][0].set_title("new state x1")
+#axs[1][0].set_title("nepythonw state x1")
 
 #axs[1][1].imshow(field_3, origin="lower", cmap='gray')
 #axs[1][1].set_title("after 100 gens x1")

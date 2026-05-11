@@ -17,13 +17,15 @@ def main():
     root = tk.Tk()
     root.title("Noise Viewer")
 
+    current_cmap = tk.StringVar(value="gray")
+
     def on_close():
         root.destroy()
         root.quit()   # важно!
 
     def redraw_matrix(ax, canvas, matrix, title="Matrix"):
         ax.clear()
-        ax.imshow(matrix, cmap='gray')
+        ax.imshow(matrix, cmap=current_cmap.get())
         ax.set_title(title)
         ax.axis("off")
 
@@ -32,19 +34,21 @@ def main():
     def redraw_matrix_blocked(ax, canvas, matrix, title="Matrix"):
         ax.clear()
         matrix=np.round(matrix,1)
-        ax.imshow(matrix, cmap='gray')
+        ax.imshow(matrix, cmap=current_cmap.get())
         ax.set_title(title)
         ax.axis("off")
 
         canvas.draw()
 
     def update_size_label():
-        size_label.config(text=f"Size: {matrix.shape[0]} x {matrix.shape[1]}")
+        size_label.config(
+            text=f"Size: {matrix.shape[0]} x {matrix.shape[1]} | Color: {current_cmap.get()}"
+        )
 
 
     def redraw_matrix(ax, canvas, matrix, title="Matrix"):
         ax.clear()
-        ax.imshow(matrix, cmap='gray')
+        ax.imshow(matrix, cmap=current_cmap.get())
         ax.set_title(title)
         ax.axis("off")
         canvas.draw()
@@ -83,7 +87,7 @@ def main():
 
 
         fig2, ax2 = plt.subplots(figsize=(5, 5))
-        ax2.imshow(preview_matrix, cmap='gray')
+        ax2.imshow(preview_matrix, cmap=current_cmap.get())
         ax2.set_title("matrix_2")
         ax2.axis("off")
 
@@ -94,7 +98,7 @@ def main():
         def redraw_preview(title="matrix_2"):
             nonlocal preview_matrix
             ax2.clear()
-            ax2.imshow(preview_matrix, cmap='gray')
+            ax2.imshow(preview_matrix, cmap=current_cmap.get())
             ax2.set_title(title)
             ax2.axis("off")
             canvas2.draw()
@@ -103,7 +107,7 @@ def main():
             nonlocal preview_matrix
             bw = (preview_matrix >= border).astype(int)
             ax2.clear()
-            ax2.imshow(bw, cmap='gray')
+            ax2.imshow(bw, cmap=current_cmap.get())
             ax2.set_title(title)
             ax2.axis("off")
             canvas2.draw()
@@ -348,7 +352,7 @@ def main():
     matrix = np.random.randint(0,2, size=(100,100))
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.imshow(matrix, cmap='gray')
+    ax.imshow(matrix, cmap=current_cmap.get())
     ax.set_title("Matrix")
     ax.axis("off")
 
@@ -384,7 +388,9 @@ def main():
 
         entries = {}
 
-        for label in ["x", "y", "tiles", "seed", "size","octaves"]:
+        # size задаёт и физический размер области, и итоговую сторону матрицы.
+        # x = y = size, tiles = 1.
+        for label in ["size", "seed", "octaves"]:
             tk.Label(win, text=label).pack()
             e = tk.Entry(win)
             e.pack()
@@ -392,19 +398,21 @@ def main():
 
         def generate():
             nonlocal matrix
-            x = int(entries["x"].get())
-            y = int(entries["y"].get())
-            tiles = int(entries["tiles"].get())
-            seed = int(entries["seed"].get())
             size = int(entries["size"].get())
-            octaves = int(entries["octaves"].get())
+            seed = int(entries["seed"].get() or 0)
+            octaves = int(entries["octaves"].get() or 1)
 
-            lin_x = np.linspace(0, x, x * tiles)
-            lin_y = np.linspace(0, y, y * tiles)
+            x = size
+            y = size
+            tiles = 1
+
+            lin_x = np.linspace(0, x, x * tiles, endpoint=False)
+            lin_y = np.linspace(0, y, y * tiles, endpoint=False)
             xv, yv = np.meshgrid(lin_x, lin_y)
 
             matrix = Perlin.fractal_perlin(xv, yv, seed=seed, size=size, octaves=octaves)
             redraw_matrix(ax, canvas, matrix, "Perlin")
+            win.destroy()
 
         tk.Button(win, text="Generate", command=generate).pack()
 
@@ -426,21 +434,46 @@ def main():
         rule_entry = tk.Entry(win)
         rule_entry.pack()
 
+        tk.Label(win, text="Iterations").pack()
+        iterations_entry = tk.Entry(win)
+        iterations_entry.pack()
+        iterations_entry.insert(0, "1")
+
+        def set_day_night():
+            mode_var.set("Moore")
+
+            dist_entry.delete(0, tk.END)
+            dist_entry.insert(0, "1")
+
+            rule_entry.delete(0, tk.END)
+            rule_entry.insert(0, "B.3.6.7.8/S.3.4.6.7.8")
+
+            iterations_entry.delete(0, tk.END)
+            iterations_entry.insert(0, "1")
+
         def generate():
             nonlocal matrix
 
-            mode = 1 if mode_var.get() == "Moore" else 0
-            distance = int(dist_entry.get())
-            rule = rule_entry.get()
+            mode = 1 if mode_var.get() == "Moore" else 2
+            distance = int(dist_entry.get() or 1)
+            rule = rule_entry.get() or "B.3.6.7.8/S.3.4.6.7.8"
+            iterations = int(iterations_entry.get() or 1)
 
-            matrix = Cellar_automat.next_generation_lands_v2(
-                matrix, mode, distance, rule
-            )
+            # Клеточный автомат должен работать с бинарной матрицей.
+            # Если текущая матрица вещественная, сначала бинаризуем её по 0.5.
+            matrix = np.where(matrix < 0.5, 0, 1)
 
-            redraw_matrix(ax, canvas, matrix, "Cellular")
+            for _ in range(iterations):
+                matrix = Cellar_automat.next_generation_lands_v2(
+                    matrix, mode, distance, rule
+                )
 
-        tk.Button(win, text="Generate", command=generate).pack()
+            matrix = matrix.astype(int)
+            redraw_matrix(ax, canvas, matrix, f"Cellular x{iterations}")
+            win.destroy()
 
+        tk.Button(win, text="Day/Night", command=set_day_night).pack(pady=4)
+        tk.Button(win, text="Generate", command=generate).pack(pady=4)
 
     def open_diamond_window():
         win = tk.Toplevel(root)
@@ -565,7 +598,7 @@ def main():
         bw_matrix = np.where(matrix < border, 0, 1)
 
         ax.clear()
-        ax.imshow(bw_matrix, cmap='gray')
+        ax.imshow(bw_matrix, cmap=current_cmap.get())
         ax.set_title(title)
         ax.axis("off")
         canvas.draw()
@@ -598,7 +631,7 @@ def main():
             preview_matrix = np.where(original_matrix < border, 0, 1)
 
             ax.clear()
-            ax.imshow(preview_matrix, cmap='gray')
+            ax.imshow(preview_matrix, cmap=current_cmap.get())
             ax.set_title(f"Black & White preview: {border}")
             ax.axis("off")
             canvas.draw()
@@ -641,10 +674,170 @@ def main():
         if max_val - min_val != 0:
             mat = (mat - min_val) / (max_val - min_val)
 
-        plt.imsave(file_path, mat, cmap='gray')
+        plt.imsave(file_path, mat, cmap=current_cmap.get())
+
+    def open_color_function_window():
+        nonlocal matrix, ax, canvas
+
+        win = tk.Toplevel(root)
+        win.title("Color function")
+        win.geometry("520x560")
+
+        selected_cmap = tk.StringVar(value=current_cmap.get())
+
+        ttk.Label(win, text="Choose color function:").pack(pady=(10, 4))
+
+        selected_label = ttk.Label(win, text=f"Selected: {selected_cmap.get()}")
+        selected_label.pack(pady=(0, 8))
+
+        preview_frame = ttk.Frame(win, width=420, height=180)
+        preview_frame.pack(fill=tk.BOTH, expand=False, padx=10, pady=8)
+        preview_frame.pack_propagate(False)
+
+        preview_fig, preview_ax = plt.subplots(figsize=(4.2, 1.8))
+        preview_canvas = FigureCanvasTkAgg(preview_fig, master=preview_frame)
+        preview_canvas.draw()
+        preview_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        cmap_options = [
+            "gray",
+            "binary",
+            "terrain",
+            "gist_earth",
+            "ocean",
+            "viridis",
+            "plasma",
+            "inferno",
+            "magma",
+            "cividis",
+            "cubehelix",
+            "jet",
+        ]
+
+        buttons_frame = ttk.Frame(win)
+        buttons_frame.pack(fill=tk.BOTH, expand=True, padx=10)
+
+        def redraw_color_preview(*args):
+            cmap_name = selected_cmap.get()
+            selected_label.config(text=f"Selected: {cmap_name}")
+
+            gradient = np.linspace(0, 1, 256).reshape(1, -1)
+
+            preview_ax.clear()
+            preview_ax.imshow(gradient, aspect="auto", cmap=cmap_name)
+            preview_ax.set_title(cmap_name)
+            preview_ax.axis("off")
+            preview_canvas.draw()
+
+            current_cmap.set(cmap_name)
+            redraw_matrix(ax, canvas, matrix, f"Matrix ({cmap_name})")
+
+        for index, cmap_name in enumerate(cmap_options):
+            row = index // 3
+            col = index % 3
+            ttk.Radiobutton(
+                buttons_frame,
+                text=cmap_name,
+                value=cmap_name,
+                variable=selected_cmap,
+                command=redraw_color_preview,
+            ).grid(row=row, column=col, sticky="w", padx=8, pady=4)
+
+        for col in range(3):
+            buttons_frame.columnconfigure(col, weight=1)
+
+        def apply_and_close():
+            current_cmap.set(selected_cmap.get())
+            redraw_matrix(ax, canvas, matrix, f"Matrix ({current_cmap.get()})")
+            plt.close(preview_fig)
+            win.destroy()
+
+        ttk.Button(win, text="Apply", command=apply_and_close).pack(pady=10)
+
+        redraw_color_preview()
+
+
+    def open_help_window():
+        win = tk.Toplevel(root)
+        win.title("Help")
+        win.geometry("760x620")
+
+        text_widget = tk.Text(win, wrap="word", padx=10, pady=10)
+        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(win, orient="vertical", command=text_widget.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.configure(yscrollcommand=scrollbar.set)
+
+        help_text = """
+Noise Viewer — справка по кнопкам
+
+White Noise
+Создаёт бинарный белый шум: случайную матрицу 100x100 из 0 и 1.
+
+Perlin
+Генерирует шум Перлина.
+Параметры:
+- size: размер квадратной матрицы. Также используется как x и y, то есть x = y = size.
+- seed: зерно генерации. При одинаковом seed результат повторяется.
+- octaves: количество октав. Каждая следующая октава имеет частоту в 2 раза больше и амплитуду в 2 раза меньше.
+
+Cellar
+Применяет клеточный автомат к текущей матрице.
+Параметры:
+- Mode: тип окрестности.
+  Moore — учитываются клетки вокруг текущей клетки в квадратной области.
+  Neumann — учитываются клетки по манхэттенскому расстоянию.
+- Distance: радиус окрестности от 1 и выше.
+- Rule: правило рождения/выживания в формате B.../S..., например B.3.6.7.8/S.3.4.6.7.8.
+- Iterations: сколько эпох клеточного автомата выполнить за одно нажатие Generate.
+- Day/Night: быстро ставит Moore, Distance = 1 и правило B.3.6.7.8/S.3.4.6.7.8.
+
+Diamond_Square
+Генерирует карту высот алгоритмом Diamond-Square.
+Параметры:
+- n: размер карты будет 2^n + 1.
+- seed: зерно генерации.
+- roughness: грубость рельефа.
+- octaves: количество октав.
+
+Simplex
+Генерирует симплексный шум.
+Параметры:
+- seed: зерно генерации.
+- dimension: размерность пространства от 2 до 4.
+- x, y: размер двумерной плоскости/среза.
+- z, w: фиксированные координаты среза для 3D/4D пространства.
+- octaves: количество октав для 2D-режима.
+
+redraw_block
+Округляет значения текущей матрицы до одного знака после запятой и перерисовывает изображение.
+
+redraw_black_white
+Открывает окно бинаризации. При изменении border предпросмотр обновляется сразу. Generate применяет бинаризацию к матрице: значения меньше border становятся 0, остальные — 1.
+
+Add Noise
+Открывает отдельное окно для генерации второй матрицы. После Apply вторая матрица приводится к размеру первой и усредняется с ней.
+
+Apply Mask
+Умножает текущую матрицу на маску острова: центр остаётся более высоким, края затухают.
+
+Save PNG
+Сохраняет текущую матрицу как PNG-изображение с текущей цветовой функцией.
+
+Color Function
+Открывает окно выбора цветовой функции Matplotlib. Выбранная функция отображается рядом с размером матрицы, а изображение перекрашивается сразу при выборе.
+
+Help
+Открывает это окно справки.
+"""
+        text_widget.insert("1.0", help_text)
+        text_widget.config(state="disabled")
 
     # кнопки
     buttons = [
+    ("Help", open_help_window),
+    ("Color Function", open_color_function_window),
     ("White Noise", generate_white_noise),
     ("Perlin", open_perlin_window),
     ("Cellar", open_cellar_window),
@@ -655,7 +848,7 @@ def main():
 
     ("redraw_black_white", redraw_black_white),
     ("Add Noise", add_noise),
-    ("Apply Mask", apply_mask),
+    
     ("Save PNG", save_matrix_png)
 ]
 
