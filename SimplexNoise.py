@@ -156,3 +156,49 @@ def mult_Simplex_fast(x, y, permutation, grad):
             res[i, j] = SimplexNoise([x[i, j], y[i, j]], permutation, grad)
 
     return res
+
+def build_permutation(seed=0):
+    p = list(range(256))
+    rng = np.random.default_rng(seed)
+    rng.shuffle(p)
+    return p * 2
+
+
+def normalize_matrix(mat):
+    mat = np.array(mat, dtype=float)
+    min_val = mat.min()
+    max_val = mat.max()
+
+    if max_val - min_val == 0:
+        return np.zeros_like(mat)
+
+    return (mat - min_val) / (max_val - min_val)
+
+
+def fractal_simplex(x, y, seed=0, n_dim=2, octaves=4, persistence=0.5, lacunarity=2.0):
+    if n_dim != 2:
+        raise ValueError("fractal_simplex(x, y, ...) сейчас реализован только для 2D-сетки.")
+
+    grad = generate_gradients(n_dim)
+
+    h, w = x.shape
+    result = np.zeros((h, w), dtype=float)
+
+    amplitude = 1.0
+    frequency = 1.0
+    amplitude_sum = 0.0
+
+    for octave in range(octaves):
+        perm = build_permutation(seed + octave)
+        octave_noise = mult_Simplex_fast(x * frequency, y * frequency, perm, grad)
+
+        result += octave_noise * amplitude
+        amplitude_sum += amplitude
+
+        frequency *= lacunarity
+        amplitude *= persistence
+
+    if amplitude_sum != 0:
+        result /= amplitude_sum
+
+    return normalize_matrix(result)
